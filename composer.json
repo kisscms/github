@@ -1,6 +1,7 @@
 {
 	"name": "kisscms/github",
 	"type": "library",
+	"version": "0.1.0",
 	"description": "Github connection for KISSCMS",
 	"keywords": ["github","kisscms"],
 	"homepage": "http://kisscms.com",
