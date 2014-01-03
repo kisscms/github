@@ -21,30 +21,64 @@ class Github {
 
 	}
 
+	function request($method='GET', $service="", $params=array() ){
+
+		$url = $this->api . $service;
+		// add access token
+		if( empty($params["oauth_token"]) ) $params["oauth_token"] = $this->creds["access_token"];
+
+		$http = new Http();
+		$http->setMethod($method);
+		$http->setParams( $params );
+		$http->execute( $url );
+
+		if($http->error) die($http->error);
+
+		// decode json string as a php object
+		$results = json_decode($http->result);
+		// check if the response if valid
+		$valid = ( !empty($results->meta->code) && $results->meta->code == 200 );
+
+		// log errors...
+
+		// just return the repsonse (or the whole response to display error messages
+		return ($valid) ? $results->response : $results;
+
+	}
+
 	// REST methods
 	function  get( $service="", $params=array() ){
 
 		// check cache before....
 		//...
+		$results = $this->request('GET', $service, $params );
 
-		$url = $this->api . $service .".json";
-
-		$results = $this->oauth->request($url, 'GET', $params);
-
-		return json_decode( $results );
+		return $results;
 
 	}
 
 
-	function  post() {
+	function  post( $service="", $params=array() ){
+
+		$results = $this->request('POST', $service, $params );
+
+		return $results;
 
 	}
 
-	function  put() {
+	function  put( $service="", $params=array() ){
+
+		$results = $this->request('PUT', $service, $params );
+
+		return $results;
 
 	}
 
-	function  delete() {
+	function  delete( $service="", $params=array() ){
+
+		$results = $this->request('DELETE', $service, $params );
+
+		return $results;
 
 	}
 
