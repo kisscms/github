@@ -18,6 +18,8 @@ class Github {
 		$this->config = $GLOBALS['config']['github'];
 		// get/update the creds
 		$this->creds = $this->oauth->creds();
+		// when no user token use an application token
+		//if( !$this->creds ) $this->creds = $this->token();
 
 	}
 
@@ -25,7 +27,15 @@ class Github {
 
 		$url = $this->api . $service;
 		// add access token
-		if( empty($params["oauth_token"]) ) $params["oauth_token"] = $this->creds["access_token"];
+		if( empty($params["oauth_token"]) ) {
+			if( !empty($this->creds["access_token"]) ){
+				$params["oauth_token"] = $this->creds["access_token"];
+			} else {
+				// use application creentials
+				$params["client_id"] = $this->config['key'];
+				$params["client_secret"] = $this->config['secret'];
+			}
+		}
 
 		$http = new Http();
 		$http->setMethod($method);
@@ -37,12 +47,13 @@ class Github {
 		// decode json string as a php object
 		$results = json_decode($http->result);
 		// check if the response if valid
-		$valid = ( !empty($results->meta->code) && $results->meta->code == 200 );
+		// github does't return an error code ($results->meta->code), rather just points to the documentation :P
+		$valid = empty($results->documentation_url);
 
 		// log errors...
 
-		// just return the repsonse (or the whole response to display error messages
-		return ($valid) ? $results->response : $results;
+		// just return a repsonse  when valid (or the whole response to display error messages)
+		return ($valid) ? $results : json_decode("{}");
 
 	}
 
@@ -83,10 +94,23 @@ class Github {
 	}
 
 	// Helpers
-
+	// - registers application token
+/*
 	function token(){
-		return $this->oauth->request("https://api.github.com/authorizations", "POST", array("grant_type"=>"client_credentials") );
+		$params = array(
+			"scope" => "", // add custom scope here: http://developer.github.com/v3/oauth/#scopes
+			"note" => "application token",
+			"client_id" => $this->config['key'],
+			"client_secret" => $this->config['secret']
+		);
+		$results = $this->request('POST', "authorizations", $params );
+		// convert object to array
+		$results = (array) $results;
+		// save for future requests
+		$this->oauth->creds( $results );
+		return $results;
 	}
+*/
 }
 
 ?>
