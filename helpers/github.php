@@ -2,6 +2,7 @@
 /* Github for KISSCMS */
 class Github {
 
+	public $name = "github";
 	private $api;
 	private $oauth;
 	private $config;
